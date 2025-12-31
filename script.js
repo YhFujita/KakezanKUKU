@@ -38,6 +38,8 @@ for (let d1 = 1; d1 <= 9; d1++) {
 let currentQuestion = null;
 let score = 0;
 let isSoundOn = true;
+let voices = [];
+let selectedVoice = null;
 
 // DOM要素
 const screens = {
@@ -60,7 +62,8 @@ const els = {
 
     listContainer: document.getElementById('kuku-list-container'),
     danSelector: document.querySelector('.dan-selector'),
-    btnSound: document.getElementById('btn-toggle-sound')
+    btnSound: document.getElementById('btn-toggle-sound'),
+    voiceSelect: document.getElementById('voice-select')
 };
 
 // 初期化
@@ -86,6 +89,56 @@ function setupEventListeners() {
 
     // 音声切り替え
     els.btnSound.addEventListener('click', toggleSound);
+
+    // 音声選択変更
+    els.voiceSelect.addEventListener('change', (e) => {
+        const index = parseInt(e.target.value);
+        if (voices[index]) {
+            selectedVoice = voices[index];
+            // 確認のため少し喋らせる
+            speak("これにするね", true);
+        }
+    });
+
+    // 音声リスト読み込み（イベントリスナー）
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = loadVoices;
+    }
+    loadVoices(); // 初回呼び出し
+}
+
+function loadVoices() {
+    // 日本語の音声のみ取得
+    const allVoices = speechSynthesis.getVoices();
+    voices = allVoices.filter(voice => voice.lang.startsWith('ja'));
+
+    // UI更新
+    els.voiceSelect.innerHTML = '';
+
+    if (voices.length === 0) {
+        const option = document.createElement('option');
+        option.textContent = "こえがみつかりません";
+        els.voiceSelect.appendChild(option);
+        return;
+    }
+
+    voices.forEach((voice, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        // 子供向けに「こえ1」「こえ2」のように表示
+        option.textContent = `こえ ${index + 1}`;
+
+        // Google 日本語などを優先的にデフォルトにするなどのロジックも可能だが
+        // ここでは単純に最初のものをデフォルト選択
+        if (selectedVoice === null && index === 0) {
+            selectedVoice = voice;
+            option.selected = true;
+        } else if (selectedVoice && selectedVoice.name === voice.name) {
+            option.selected = true;
+        }
+
+        els.voiceSelect.appendChild(option);
+    });
 }
 
 function toggleSound() {
@@ -103,8 +156,8 @@ function updateSoundButton() {
     }
 }
 
-function speak(text) {
-    if (!isSoundOn) return;
+function speak(text, force = false) {
+    if (!isSoundOn && !force) return;
 
     // ブラウザの音声合成機能を使用
     if ('speechSynthesis' in window) {
@@ -113,6 +166,11 @@ function speak(text) {
 
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'ja-JP';
+
+        if (selectedVoice) {
+            utterance.voice = selectedVoice;
+        }
+
         utterance.rate = 1.0; // 速度
         utterance.pitch = 1.0; // 高さ
 
