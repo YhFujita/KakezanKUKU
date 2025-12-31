@@ -29,8 +29,23 @@
             </div>
 
             <div class="menu-buttons">
-                <button id="btn-start-quiz" class="btn-primary btn-large">クイズをはじめる</button>
+                <!-- クイズ開始ボタンをレベル選択画面へ遷移するように変更 -->
+                <button id="btn-to-level-select" class="btn-primary btn-large">クイズをはじめる</button>
                 <button id="btn-show-list" class="btn-secondary">いちちらんひょう</button>
+            </div>
+        </section>
+
+        <!-- レベル選択画面 -->
+        <section id="level-screen" class="screen hidden">
+            <header class="screen-header">
+                <button class="btn-back" data-target="title-screen">もどる</button>
+                <h2>レベルをえらんでね</h2>
+            </header>
+            <div class="level-buttons">
+                <button class="btn-level level-easy" data-max="20">かんたん<br><span>(こたえ 20まで)</span></button>
+                <button class="btn-level level-normal" data-max="30">ふつう<br><span>(こたえ 30まで)</span></button>
+                <button class="btn-level level-hard" data-max="50">むずかしい<br><span>(こたえ 50まで)</span></button>
+                <button class="btn-level level-expert" data-max="81">もっとむずかしい<br><span>(ぜんぶ)</span></button>
             </div>
         </section>
 

@@ -167,6 +167,59 @@ button:active {
     border-radius: 20px;
 }
 
+/* Level Buttons */
+.level-buttons {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.btn-level {
+    padding: 20px;
+    font-size: 1.5rem;
+    color: white;
+    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.4;
+}
+
+.btn-level span {
+    font-size: 1rem;
+    font-weight: normal;
+    opacity: 0.9;
+}
+
+.btn-level:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.level-easy {
+    background-color: #4ECDC4;
+    box-shadow: 0 5px 0 #3DBDB4;
+}
+
+.level-normal {
+    background-color: #FFD93D;
+    color: #5D4037;
+    box-shadow: 0 5px 0 #E0C640;
+}
+
+.level-hard {
+    background-color: #FF6B6B;
+    box-shadow: 0 5px 0 #D64545;
+}
+
+.level-expert {
+    background-color: #6C5CE7;
+    box-shadow: 0 5px 0 #5849BE;
+}
+
+
 .screen-header {
     width: 100%;
     display: flex;

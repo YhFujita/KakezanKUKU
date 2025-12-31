@@ -40,12 +40,14 @@ let score = 0;
 let isSoundOn = true;
 let voices = [];
 let selectedVoice = null;
+let currentMaxAns = 81; // デフォルトは全部
 
 // DOM要素
 const screens = {
     title: document.getElementById('title-screen'),
     list: document.getElementById('list-screen'),
-    quiz: document.getElementById('quiz-screen')
+    quiz: document.getElementById('quiz-screen'),
+    level: document.getElementById('level-screen')
 };
 
 const els = {
@@ -74,8 +76,16 @@ function init() {
 
 function setupEventListeners() {
     // 画面遷移
-    document.getElementById('btn-start-quiz').addEventListener('click', startQuiz);
+    document.getElementById('btn-to-level-select').addEventListener('click', () => showScreen('level'));
     document.getElementById('btn-show-list').addEventListener('click', () => showScreen('list'));
+
+    // レベル選択
+    document.querySelectorAll('.btn-level').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const max = parseInt(e.currentTarget.dataset.max);
+            startQuiz(max);
+        });
+    });
 
     document.querySelectorAll('.btn-back').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -190,7 +200,8 @@ function showScreen(screenName) {
 
 // --- クイズ機能 ---
 
-function startQuiz() {
+function startQuiz(maxAns) {
+    currentMaxAns = maxAns;
     score = 0;
     updateScore();
     showScreen('quiz');
@@ -201,26 +212,28 @@ function nextQuestion() {
     // ヒントを隠す
     els.hintArea.classList.add('hidden');
 
+    // 選択されたレベル（答えの大きさ）以下の問題のみ抽出
+    const filteredData = kukuData.filter(d => d.ans <= currentMaxAns);
+
     // ランダムに問題を選択
-    const randomIndex = Math.floor(Math.random() * kukuData.length);
-    currentQuestion = kukuData[randomIndex];
+    const randomIndex = Math.floor(Math.random() * filteredData.length);
+    currentQuestion = filteredData[randomIndex];
 
     // 表示更新
     els.qD1.textContent = currentQuestion.d1;
     els.qD2.textContent = currentQuestion.d2;
 
     // 選択肢生成
-    generateOptions();
+    generateOptions(filteredData);
 }
 
-function generateOptions() {
+function generateOptions(filteredData) {
     const options = new Set();
     options.add(currentQuestion.ans);
 
     while (options.size < 4) {
-        // 誤答の生成ロジック：近い数字や、九九にある答えから選ぶとより学習効果が高い
-        // 今回はシンプルに九九の答えの中からランダムに選ぶ
-        const randomAns = kukuData[Math.floor(Math.random() * kukuData.length)].ans;
+        // 同じレベル帯の答えから選択肢を選ぶ（難易度調整）
+        const randomAns = filteredData[Math.floor(Math.random() * filteredData.length)].ans;
         if (randomAns !== currentQuestion.ans) {
             options.add(randomAns);
         }
