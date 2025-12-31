@@ -33,9 +33,11 @@ for (let d1 = 1; d1 <= 9; d1++) {
     }
 }
 
+
 // 状態管理
 let currentQuestion = null;
 let score = 0;
+let isSoundOn = true;
 
 // DOM要素
 const screens = {
@@ -55,8 +57,10 @@ const els = {
     feedback: document.getElementById('feedback-overlay'),
     feedbackIcon: document.getElementById('feedback-icon'),
     feedbackRead: document.getElementById('feedback-read'),
+
     listContainer: document.getElementById('kuku-list-container'),
-    danSelector: document.querySelector('.dan-selector')
+    danSelector: document.querySelector('.dan-selector'),
+    btnSound: document.getElementById('btn-toggle-sound')
 };
 
 // 初期化
@@ -69,7 +73,7 @@ function setupEventListeners() {
     // 画面遷移
     document.getElementById('btn-start-quiz').addEventListener('click', startQuiz);
     document.getElementById('btn-show-list').addEventListener('click', () => showScreen('list'));
-    
+
     document.querySelectorAll('.btn-back').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const target = e.target.dataset.target;
@@ -79,7 +83,43 @@ function setupEventListeners() {
 
     // ヒント
     document.getElementById('btn-hint').addEventListener('click', showHint);
+
+    // 音声切り替え
+    els.btnSound.addEventListener('click', toggleSound);
 }
+
+function toggleSound() {
+    isSoundOn = !isSoundOn;
+    updateSoundButton();
+}
+
+function updateSoundButton() {
+    if (isSoundOn) {
+        els.btnSound.textContent = '🔊 ON';
+        els.btnSound.classList.remove('muted');
+    } else {
+        els.btnSound.textContent = '🔇 OFF';
+        els.btnSound.classList.add('muted');
+    }
+}
+
+function speak(text) {
+    if (!isSoundOn) return;
+
+    // ブラウザの音声合成機能を使用
+    if ('speechSynthesis' in window) {
+        // 既存の発話をキャンセル
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ja-JP';
+        utterance.rate = 1.0; // 速度
+        utterance.pitch = 1.0; // 高さ
+
+        window.speechSynthesis.speak(utterance);
+    }
+}
+
 
 function showScreen(screenName) {
     Object.values(screens).forEach(s => {
@@ -102,7 +142,7 @@ function startQuiz() {
 function nextQuestion() {
     // ヒントを隠す
     els.hintArea.classList.add('hidden');
-    
+
     // ランダムに問題を選択
     const randomIndex = Math.floor(Math.random() * kukuData.length);
     currentQuestion = kukuData[randomIndex];
@@ -144,17 +184,22 @@ function generateOptions() {
 
 function checkAnswer(selectedAns) {
     const isCorrect = selectedAns === currentQuestion.ans;
-    
+
     // フィードバック表示
     els.feedback.classList.remove('hidden');
-    
+
     if (isCorrect) {
         els.feedbackIcon.textContent = '⭕';
         els.feedbackIcon.style.color = 'var(--correct-color)';
+
         els.feedbackRead.textContent = currentQuestion.read;
+
+        // 読み上げ
+        speak(currentQuestion.read);
+
         score++;
         updateScore();
-        
+
         // 2秒後に次の問題へ
         setTimeout(() => {
             els.feedback.classList.add('hidden');
@@ -164,7 +209,7 @@ function checkAnswer(selectedAns) {
         els.feedbackIcon.textContent = '❌';
         els.feedbackIcon.style.color = 'var(--wrong-color)';
         els.feedbackRead.textContent = 'ざんねん...';
-        
+
         // 1秒後にやり直し
         setTimeout(() => {
             els.feedback.classList.add('hidden');
@@ -180,27 +225,27 @@ function updateScore() {
 
 function showHint() {
     if (!currentQuestion) return;
-    
+
     const d1 = currentQuestion.d1;
     const d2 = currentQuestion.d2;
-    
+
     // テキスト設定
     els.hintText.textContent = `${d1}が ${d2}こ ある という いみだよ`;
-    
+
     // ビジュアル生成
     els.hintVisual.innerHTML = '';
-    
+
     // d2個のグループを作る
     for (let i = 0; i < d2; i++) {
         const group = document.createElement('div');
         group.className = 'hint-group';
-        
+
         // グループ内にd1個のドットを作る
         // グリッドレイアウトを調整（数が少ないときは1列、多いときは適宜）
         let columns = 1;
         if (d1 >= 2) columns = 2;
         if (d1 >= 5) columns = 3;
-        
+
         group.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
 
         for (let j = 0; j < d1; j++) {
@@ -210,7 +255,7 @@ function showHint() {
         }
         els.hintVisual.appendChild(group);
     }
-    
+
     els.hintArea.classList.remove('hidden');
 }
 
@@ -225,7 +270,7 @@ function setupListScreen() {
         btn.addEventListener('click', () => showDan(i));
         els.danSelector.appendChild(btn);
     }
-    
+
     // 初期表示
     showDan(1);
 }
@@ -235,32 +280,34 @@ function showDan(dan) {
     document.querySelectorAll('.btn-dan').forEach(b => {
         b.classList.toggle('active', parseInt(b.textContent) === dan);
     });
-    
+
     // リスト生成
     els.listContainer.innerHTML = '';
     const danData = kukuData.filter(d => d.d1 === dan);
-    
+
     danData.forEach(item => {
         const row = document.createElement('div');
         row.className = 'kuku-row';
-        
+
         const expression = document.createElement('div');
         expression.textContent = `${item.d1} × ${item.d2} = ${item.ans}`;
-        
+
         const read = document.createElement('div');
         read.className = 'kuku-read';
         read.textContent = item.read;
-        
+
         row.appendChild(expression);
         row.appendChild(read);
-        
-        // クリックで読み上げ（今回はテキスト表示のみだが、将来的に音声合成も可）
+
         row.addEventListener('click', () => {
-            // 視覚的なフィードバックのみ
+            // 視覚的なフィードバック
             row.style.backgroundColor = '#e0f7fa';
             setTimeout(() => row.style.backgroundColor = '', 200);
+
+            // 読み上げ
+            speak(item.read);
         });
-        
+
         els.listContainer.appendChild(row);
     });
 }

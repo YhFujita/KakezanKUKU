@@ -1,16 +1,22 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>たのしいかけざん九九</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="app-container">
+        <!-- サウンド切り替えボタン -->
+        <button id="btn-toggle-sound" class="btn-sound" aria-label="音声を切り替える">🔊 ON</button>
+
         <!-- タイトル画面 -->
         <section id="title-screen" class="screen active">
             <h1 class="main-title">たのしい<br>かけざん九九</h1>
@@ -40,7 +46,7 @@
                 <button class="btn-back" data-target="title-screen">やめる</button>
                 <div class="score-display">せいかい: <span id="score-count">0</span></div>
             </header>
-            
+
             <div class="quiz-area">
                 <div class="question-display">
                     <span id="q-d1" class="number">3</span>
@@ -62,7 +68,7 @@
                 <div id="answer-options" class="answer-options">
                     <!-- JSで生成 -->
                 </div>
-                
+
                 <div id="feedback-overlay" class="feedback-overlay hidden">
                     <div class="feedback-content">
                         <span id="feedback-icon">⭕</span>
@@ -74,4 +80,5 @@
     </div>
     <script src="script.js"></script>
 </body>
+
 </html>
